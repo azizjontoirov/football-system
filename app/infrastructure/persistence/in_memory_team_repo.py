@@ -15,5 +15,11 @@ class InMemoryTeamRepository(TeamRepositoryPort):
         self._next_id += 1
         return team
 
+    def get_by_id(self, team_id: int) -> Team | None:
+        for team in self._teams:
+            if team.id == team_id:
+                return team
+        return None
+
     def get_all(self) -> list[Team]:
         return list(self._teams)
