@@ -1,0 +1,1170 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Havaskor futbol musobaqalari tizimi",
+    "description": "Havaskor futbol turnirlarini tashkil etish, jamoalar va o'yinchilarni ro'yxatdan o'tkazish, uchrashuv natijalarini kiritish hamda turnir jadvalini avtomatik hisoblash uchun REST API.",
+    "contact": {
+      "name": "Toirov Azizjon",
+      "url": "https://github.com/azizjontoirov/football-system"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Tizim holati"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/": {
+      "get": {
+        "tags": [
+          "Jamoalar"
+        ],
+        "summary": "Barcha jamoalar ro'yxatini olish",
+        "description": "Tizimda ro'yxatdan o'tgan barcha futbol jamoalarini qaytaradi.",
+        "operationId": "get_teams_api_v1_teams__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TeamResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response Get Teams Api V1 Teams  Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Jamoalar"
+        ],
+        "summary": "Yangi jamoani ro'yxatdan o'tkazish",
+        "description": "Tizimga yangi havaskor futbol jamoasini qo'shadi. Bir xil nomdagi jamoani qayta qo'shish taqiqlanadi.",
+        "operationId": "create_team_api_v1_teams__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Jamoa nomi band yoki noto'g'ri",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{team_id}": {
+      "get": {
+        "tags": [
+          "Jamoalar"
+        ],
+        "summary": "Jamoani ID bo'yicha olish",
+        "operationId": "get_team_by_id_api_v1_teams__team_id__get",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Jamoa topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Jamoalar"
+        ],
+        "summary": "Jamoani o'chirish",
+        "operationId": "delete_team_api_v1_teams__team_id__delete",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Jamoa topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{team_id}/players": {
+      "get": {
+        "tags": [
+          "Jamoalar"
+        ],
+        "summary": "Jamoa o'yinchilari ro'yxatini olish",
+        "operationId": "get_team_players_api_v1_teams__team_id__players_get",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PlayerResponseSchema"
+                  },
+                  "title": "Response Get Team Players Api V1 Teams  Team Id  Players Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Jamoa topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/players/": {
+      "post": {
+        "tags": [
+          "O'yinchilar"
+        ],
+        "summary": "Jamoaga yangi o'yinchi qo'shish",
+        "description": "Tanlangan jamoaga yangi futbolchini biriktiradi. Bitta jamoada bir xil futbolka raqami takrorlanmasligi tekshiriladi.",
+        "operationId": "create_player_api_v1_players__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayerCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Futbolka raqami band yoki noto'g'ri",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ko'rsatilgan jamoa topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tournaments/": {
+      "get": {
+        "tags": [
+          "Turnirlar"
+        ],
+        "summary": "Barcha turnirlar ro'yxatini olish",
+        "operationId": "get_tournaments_api_v1_tournaments__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentResponseSchema"
+                  },
+                  "type": "array",
+                  "title": "Response Get Tournaments Api V1 Tournaments  Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Turnirlar"
+        ],
+        "summary": "Yangi turnir yaratish",
+        "description": "Yangi havaskor futbol musobaqasi va uning mavsumini ro'yxatdan o'tkazadi.",
+        "operationId": "create_tournament_api_v1_tournaments__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TournamentCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TournamentResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tournaments/{tournament_id}/matches": {
+      "get": {
+        "tags": [
+          "Turnirlar"
+        ],
+        "summary": "Turnir uchrashuvlari ro'yxatini olish",
+        "operationId": "get_tournament_matches_api_v1_tournaments__tournament_id__matches_get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchResponseSchema"
+                  },
+                  "title": "Response Get Tournament Matches Api V1 Tournaments  Tournament Id  Matches Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Turnir topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tournaments/{tournament_id}/standings": {
+      "get": {
+        "tags": [
+          "Turnirlar"
+        ],
+        "summary": "Turnir jadvalini hisoblash va olish",
+        "description": "Tugagan uchrashuvlar asosida tanlangan strategiya (`standard` yoki `bonus`) bo'yicha turnir jadvalini saralab qaytaradi.",
+        "operationId": "get_tournament_standings_api_v1_tournaments__tournament_id__standings_get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Tournament Id"
+            }
+          },
+          {
+            "name": "scoring",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Hisoblash qoidasi: `standard` (3-1-0) yoki `bonus` (3+ golga +1 ochko)",
+              "default": "standard",
+              "title": "Scoring"
+            },
+            "description": "Hisoblash qoidasi: `standard` (3-1-0) yoki `bonus` (3+ golga +1 ochko)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StandingResponseSchema"
+                  },
+                  "title": "Response Get Tournament Standings Api V1 Tournaments  Tournament Id  Standings Get"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Noma'lum scoring qoidasi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Turnir topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matches/": {
+      "post": {
+        "tags": [
+          "Uchrashuvlar"
+        ],
+        "summary": "Yangi uchrashuv belgilash",
+        "description": "Turnir doirasida mezbon va mehmon jamoalar o'rtasida o'yin belgilaydi.",
+        "operationId": "create_match_api_v1_matches__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchCreateSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Jamoa o'ziga qarshi o'ynashi mumkin emas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Turnir yoki jamoa topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matches/{match_id}/result": {
+      "patch": {
+        "tags": [
+          "Uchrashuvlar"
+        ],
+        "summary": "Uchrashuv hisobini kiritish",
+        "description": "Belgilangan uchrashuvning yakuniy hisobini kiritadi va uning holatini `finished` ga o'zgartiradi.",
+        "operationId": "update_match_result_api_v1_matches__match_id__result_patch",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchResultSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Gollar soni manfiy bo'lishi mumkin emas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Uchrashuv topilmadi",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Tizim holati"
+        ],
+        "summary": "Asosiy kirish nuqtasi",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponseSchema": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Xatolik haqida qisqacha izoh"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponseSchema",
+        "example": {
+          "detail": "ID=99 bo'lgan jamoa topilmadi"
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MatchCreateSchema": {
+        "properties": {
+          "tournament_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Tournament Id",
+            "description": "Turnir ID raqami"
+          },
+          "home_team_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Home Team Id",
+            "description": "Mezbon jamoa ID raqami"
+          },
+          "away_team_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Away Team Id",
+            "description": "Mehmon jamoa ID raqami"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tournament_id",
+          "home_team_id",
+          "away_team_id"
+        ],
+        "title": "MatchCreateSchema",
+        "example": {
+          "away_team_id": 2,
+          "home_team_id": 1,
+          "tournament_id": 1
+        }
+      },
+      "MatchResponseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "tournament_id": {
+            "type": "integer",
+            "title": "Tournament Id"
+          },
+          "home_team_id": {
+            "type": "integer",
+            "title": "Home Team Id"
+          },
+          "away_team_id": {
+            "type": "integer",
+            "title": "Away Team Id"
+          },
+          "home_score": {
+            "type": "integer",
+            "title": "Home Score"
+          },
+          "away_score": {
+            "type": "integer",
+            "title": "Away Score"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Uchrashuv holati: scheduled yoki finished"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tournament_id",
+          "home_team_id",
+          "away_team_id",
+          "home_score",
+          "away_score",
+          "status"
+        ],
+        "title": "MatchResponseSchema",
+        "example": {
+          "away_score": 1,
+          "away_team_id": 2,
+          "home_score": 3,
+          "home_team_id": 1,
+          "id": 1,
+          "status": "finished",
+          "tournament_id": 1
+        }
+      },
+      "MatchResultSchema": {
+        "properties": {
+          "home_score": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Home Score",
+            "description": "Mezbon jamoa urgan gollar soni"
+          },
+          "away_score": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Away Score",
+            "description": "Mehmon jamoa urgan gollar soni"
+          }
+        },
+        "type": "object",
+        "required": [
+          "home_score",
+          "away_score"
+        ],
+        "title": "MatchResultSchema",
+        "example": {
+          "away_score": 1,
+          "home_score": 3
+        }
+      },
+      "PlayerCreateSchema": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Full Name",
+            "description": "O'yinchining ism-familiyasi"
+          },
+          "team_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Team Id",
+            "description": "O'yinchi biriktiriladigan jamoa ID raqami"
+          },
+          "jersey_number": {
+            "type": "integer",
+            "maximum": 99.0,
+            "minimum": 1.0,
+            "title": "Jersey Number",
+            "description": "Futbolka raqami (1–99 oralig'ida)"
+          },
+          "position": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 2,
+            "title": "Position",
+            "description": "Maydondagi pozitsiyasi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "team_id",
+          "jersey_number",
+          "position"
+        ],
+        "title": "PlayerCreateSchema",
+        "example": {
+          "full_name": "Azizbek Karimov",
+          "jersey_number": 10,
+          "position": "Hujumchi",
+          "team_id": 1
+        }
+      },
+      "PlayerResponseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "jersey_number": {
+            "type": "integer",
+            "title": "Jersey Number"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "team_id",
+          "jersey_number",
+          "position"
+        ],
+        "title": "PlayerResponseSchema",
+        "example": {
+          "full_name": "Azizbek Karimov",
+          "id": 1,
+          "jersey_number": 10,
+          "position": "Hujumchi",
+          "team_id": 1
+        }
+      },
+      "StandingResponseSchema": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "team_name": {
+            "type": "string",
+            "title": "Team Name"
+          },
+          "played": {
+            "type": "integer",
+            "title": "Played",
+            "description": "O'tkazilgan o'yinlar soni"
+          },
+          "won": {
+            "type": "integer",
+            "title": "Won",
+            "description": "G'alabalar soni"
+          },
+          "drawn": {
+            "type": "integer",
+            "title": "Drawn",
+            "description": "Duranglar soni"
+          },
+          "lost": {
+            "type": "integer",
+            "title": "Lost",
+            "description": "Mag'lubiyatlar soni"
+          },
+          "goals_for": {
+            "type": "integer",
+            "title": "Goals For",
+            "description": "Urilgan gollar"
+          },
+          "goals_against": {
+            "type": "integer",
+            "title": "Goals Against",
+            "description": "O'tkazib yuborilgan gollar"
+          },
+          "goal_difference": {
+            "type": "integer",
+            "title": "Goal Difference",
+            "description": "To'plar nisbati"
+          },
+          "points": {
+            "type": "integer",
+            "title": "Points",
+            "description": "To'plangan ochkolar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "team_name",
+          "played",
+          "won",
+          "drawn",
+          "lost",
+          "goals_for",
+          "goals_against",
+          "goal_difference",
+          "points"
+        ],
+        "title": "StandingResponseSchema",
+        "example": {
+          "drawn": 0,
+          "goal_difference": 2,
+          "goals_against": 1,
+          "goals_for": 3,
+          "lost": 0,
+          "played": 1,
+          "points": 3,
+          "team_id": 1,
+          "team_name": "Samarqand United",
+          "won": 1
+        }
+      },
+      "TeamCreateSchema": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "Name",
+            "description": "Jamoaning rasmiy nomi"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 2,
+            "title": "City",
+            "description": "Jamoa joylashgan shahar yoki tuman"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "city"
+        ],
+        "title": "TeamCreateSchema",
+        "example": {
+          "city": "Samarqand",
+          "name": "Samarqand United"
+        }
+      },
+      "TeamResponseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Jamoaning unikal identifikatori"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Jamoa nomi"
+          },
+          "city": {
+            "type": "string",
+            "title": "City",
+            "description": "Shahar nomi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "city"
+        ],
+        "title": "TeamResponseSchema",
+        "example": {
+          "city": "Samarqand",
+          "id": 1,
+          "name": "Samarqand United"
+        }
+      },
+      "TournamentCreateSchema": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 3,
+            "title": "Name",
+            "description": "Turnir nomi"
+          },
+          "season": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 4,
+            "title": "Season",
+            "description": "Musobaqa mavsumi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "season"
+        ],
+        "title": "TournamentCreateSchema",
+        "example": {
+          "name": "Samarqand Havaskorlar Kubogi",
+          "season": "2026"
+        }
+      },
+      "TournamentResponseSchema": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "season": {
+            "type": "string",
+            "title": "Season"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Turnir holati: upcoming, active yoki finished"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "season",
+          "status"
+        ],
+        "title": "TournamentResponseSchema",
+        "example": {
+          "id": 1,
+          "name": "Samarqand Havaskorlar Kubogi",
+          "season": "2026",
+          "status": "upcoming"
+        }
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Tizim holati",
+      "description": "Server ishlayotganini va joriy versiyani tekshirish uchun texnik nuqta."
+    },
+    {
+      "name": "Jamoalar",
+      "description": "Havaskor futbol jamoalarini ro'yxatdan o'tkazish, ko'rish va o'chirish amallari."
+    },
+    {
+      "name": "O'yinchilar",
+      "description": "Jamoalarga futbolchilarni biriktirish va ularning tarkibini boshqarish."
+    },
+    {
+      "name": "Turnirlar",
+      "description": "Musobaqalar yaratish, o'yinlar ro'yxati va turnir jadvalini olish."
+    },
+    {
+      "name": "Uchrashuvlar",
+      "description": "O'yinlarni rejalashtirish va yakuniy hisoblarni kiritish."
+    }
+  ]
+}

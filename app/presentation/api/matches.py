@@ -3,12 +3,27 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.use_cases.tournament_use_case import TournamentUseCase
 from app.core.dependencies import get_tournament_use_case
-from app.presentation.api.schemas import MatchCreateSchema, MatchResultSchema
+from app.presentation.api.schemas import (
+    ErrorResponseSchema,
+    MatchCreateSchema,
+    MatchResponseSchema,
+    MatchResultSchema,
+)
 
 router = APIRouter(prefix="/matches", tags=["Uchrashuvlar"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=MatchResponseSchema,
+    summary="Yangi uchrashuv belgilash",
+    description="Turnir doirasida mezbon va mehmon jamoalar o'rtasida o'yin belgilaydi.",
+    responses={
+        400: {"model": ErrorResponseSchema, "description": "Jamoa o'ziga qarshi o'ynashi mumkin emas"},
+        404: {"model": ErrorResponseSchema, "description": "Turnir yoki jamoa topilmadi"},
+    },
+)
 def create_match(
     payload: MatchCreateSchema,
     use_case: TournamentUseCase = Depends(get_tournament_use_case),
@@ -26,7 +41,16 @@ def create_match(
         raise HTTPException(status_code=400, detail=str(err))
 
 
-@router.patch("/{match_id}/result")
+@router.patch(
+    "/{match_id}/result",
+    response_model=MatchResponseSchema,
+    summary="Uchrashuv hisobini kiritish",
+    description="Belgilangan uchrashuvning yakuniy hisobini kiritadi va uning holatini `finished` ga o'zgartiradi.",
+    responses={
+        400: {"model": ErrorResponseSchema, "description": "Gollar soni manfiy bo'lishi mumkin emas"},
+        404: {"model": ErrorResponseSchema, "description": "Uchrashuv topilmadi"},
+    },
+)
 def update_match_result(
     match_id: int,
     payload: MatchResultSchema,
