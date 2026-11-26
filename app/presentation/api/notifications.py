@@ -16,7 +16,9 @@ class NotificationResponseSchema(BaseModel):
     "/",
     response_model=list[NotificationResponseSchema],
     summary="Tizim hodisalari va bildirishnomalar lentasini olish",
-    description="EventBus orqali qayta ishlangan so'nggi domen hodisalari (yangi jamoalar, tugagan o'yinlar) ro'yxatini qaytaradi.",
-)
+    description=(
+        "EventBus orqali qayta ishlangan so'nggi domen hodisalari "
+        "(yangi jamoalar, tugagan o'yinlar) ro'yxatini qaytaradi."
+    ),)
 def get_notifications(store: list[dict] = Depends(get_notification_store)):
     return list(reversed(store))

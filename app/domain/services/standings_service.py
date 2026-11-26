@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from app.domain.entities.match import Match, MatchStatus
 from app.domain.entities.team import Team
 from app.domain.strategies.scoring_strategy import ScoringStrategy, StandardScoringStrategy

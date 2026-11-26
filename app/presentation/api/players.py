@@ -1,4 +1,5 @@
 from dataclasses import asdict
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.use_cases.player_use_case import PlayerUseCase
@@ -17,8 +18,10 @@ router = APIRouter(prefix="/players", tags=["O'yinchilar"])
     status_code=status.HTTP_201_CREATED,
     response_model=PlayerResponseSchema,
     summary="Jamoaga yangi o'yinchi qo'shish",
-    description="Tanlangan jamoaga yangi futbolchini biriktiradi. Bitta jamoada bir xil futbolka raqami takrorlanmasligi tekshiriladi.",
-    responses={
+    description=(
+        "Tanlangan jamoaga yangi futbolchini biriktiradi. "
+        "Bitta jamoada bir xil futbolka raqami takrorlanmasligi tekshiriladi."
+    ),    responses={
         400: {"model": ErrorResponseSchema, "description": "Futbolka raqami band yoki noto'g'ri"},
         404: {"model": ErrorResponseSchema, "description": "Ko'rsatilgan jamoa topilmadi"},
     },
