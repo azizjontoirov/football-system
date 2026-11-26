@@ -10,6 +10,7 @@ from app.infrastructure.database.models import (  # noqa: F401
     PlayerModel,
     TeamModel,
     TournamentModel,
+    UserModel,
 )
 from app.infrastructure.database.session import Base, get_db
 from app.main import app
@@ -26,7 +27,6 @@ def client():
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
 
-    # Bildirishnomalar lentasini har bir test oldidan tozalaymiz
     get_notification_store().clear()
 
     def override_get_db():
@@ -42,3 +42,27 @@ def client():
 
     app.dependency_overrides.clear()
     Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture()
+def auth_headers(client):
+    """Berilgan rol uchun foydalanuvchi yaratib, Bearer token sarlavhasini qaytaradi."""
+
+    def _create_headers(username: str, role: str) -> dict[str, str]:
+        client.post(
+            "/api/v1/auth/register",
+            json={
+                "username": username,
+                "email": f"{username}@football.uz",
+                "password": "password123",
+                "role": role,
+            },
+        )
+        login_res = client.post(
+            "/api/v1/auth/login",
+            data={"username": username, "password": "password123"},
+        )
+        token = login_res.json()["access_token"]
+        return {"Authorization": f"Bearer {token}"}
+
+    return _create_headers

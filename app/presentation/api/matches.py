@@ -3,7 +3,9 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.use_cases.tournament_use_case import TournamentUseCase
+from app.core.auth import require_roles
 from app.core.dependencies import get_tournament_use_case
+from app.domain.entities.user import User, UserRole
 from app.presentation.api.schemas import (
     ErrorResponseSchema,
     MatchCreateSchema,
@@ -28,6 +30,7 @@ router = APIRouter(prefix="/matches", tags=["Uchrashuvlar"])
 def create_match(
     payload: MatchCreateSchema,
     use_case: TournamentUseCase = Depends(get_tournament_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN, UserRole.ORGANIZER)),
 ):
     try:
         match = use_case.schedule_match(
@@ -56,6 +59,7 @@ def update_match_result(
     match_id: int,
     payload: MatchResultSchema,
     use_case: TournamentUseCase = Depends(get_tournament_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN, UserRole.ORGANIZER)),
 ):
     try:
         match = use_case.record_match_result(

@@ -9,6 +9,7 @@ from app.infrastructure.database.models import (  # noqa: F401
     PlayerModel,
     TeamModel,
     TournamentModel,
+    UserModel,
 )
 from app.infrastructure.database.session import Base
 

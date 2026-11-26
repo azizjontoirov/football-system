@@ -4,7 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 
 from app.application.use_cases.player_use_case import PlayerUseCase
 from app.application.use_cases.team_use_case import TeamUseCase
+from app.core.auth import require_roles
 from app.core.dependencies import get_player_use_case, get_team_use_case
+from app.domain.entities.user import User, UserRole
 from app.presentation.api.schemas import (
     ErrorResponseSchema,
     PlayerResponseSchema,
@@ -20,12 +22,16 @@ router = APIRouter(prefix="/teams", tags=["Jamoalar"])
     status_code=status.HTTP_201_CREATED,
     response_model=TeamResponseSchema,
     summary="Yangi jamoani ro'yxatdan o'tkazish",
-    description="Tizimga yangi havaskor futbol jamoasini qo'shadi. Bir xil nomdagi jamoani qayta qo'shish taqiqlanadi.",
+    description=(
+        "Tizimga yangi havaskor futbol jamoasini qo'shadi. "
+        "Bir xil nomdagi jamoani qayta qo'shish taqiqlanadi."
+    ),
     responses={400: {"model": ErrorResponseSchema, "description": "Jamoa nomi band yoki noto'g'ri"}},
 )
 def create_team(
     payload: TeamCreateSchema,
     use_case: TeamUseCase = Depends(get_team_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN, UserRole.ORGANIZER)),
 ):
     try:
         return asdict(use_case.register_team(name=payload.name, city=payload.city))
@@ -62,7 +68,11 @@ def get_team_by_id(team_id: int, use_case: TeamUseCase = Depends(get_team_use_ca
     summary="Jamoani o'chirish",
     responses={404: {"model": ErrorResponseSchema, "description": "Jamoa topilmadi"}},
 )
-def delete_team(team_id: int, use_case: TeamUseCase = Depends(get_team_use_case)):
+def delete_team(
+    team_id: int,
+    use_case: TeamUseCase = Depends(get_team_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN)),
+):
     try:
         use_case.delete_team(team_id)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
