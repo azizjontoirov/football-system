@@ -1,5 +1,5 @@
-from functools import lru_cache
 from fastapi import Depends
+from sqlalchemy.orm import Session
 
 from app.application.use_cases.player_use_case import PlayerUseCase
 from app.application.use_cases.team_use_case import TeamUseCase
@@ -8,30 +8,29 @@ from app.domain.ports.match_repository import MatchRepositoryPort
 from app.domain.ports.player_repository import PlayerRepositoryPort
 from app.domain.ports.team_repository import TeamRepositoryPort
 from app.domain.ports.tournament_repository import TournamentRepositoryPort
-from app.infrastructure.persistence.in_memory_match_repo import InMemoryMatchRepository
-from app.infrastructure.persistence.in_memory_player_repo import InMemoryPlayerRepository
-from app.infrastructure.persistence.in_memory_team_repo import InMemoryTeamRepository
-from app.infrastructure.persistence.in_memory_tournament_repo import InMemoryTournamentRepository
+from app.infrastructure.database.session import get_db
+from app.infrastructure.persistence.sqlalchemy_repos import (
+    SQLAlchemyMatchRepository,
+    SQLAlchemyPlayerRepository,
+    SQLAlchemyTeamRepository,
+    SQLAlchemyTournamentRepository,
+)
 
 
-@lru_cache(maxsize=1)
-def get_team_repository() -> TeamRepositoryPort:
-    return InMemoryTeamRepository()
+def get_team_repository(db: Session = Depends(get_db)) -> TeamRepositoryPort:
+    return SQLAlchemyTeamRepository(db)
 
 
-@lru_cache(maxsize=1)
-def get_player_repository() -> PlayerRepositoryPort:
-    return InMemoryPlayerRepository()
+def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepositoryPort:
+    return SQLAlchemyPlayerRepository(db)
 
 
-@lru_cache(maxsize=1)
-def get_tournament_repository() -> TournamentRepositoryPort:
-    return InMemoryTournamentRepository()
+def get_tournament_repository(db: Session = Depends(get_db)) -> TournamentRepositoryPort:
+    return SQLAlchemyTournamentRepository(db)
 
 
-@lru_cache(maxsize=1)
-def get_match_repository() -> MatchRepositoryPort:
-    return InMemoryMatchRepository()
+def get_match_repository(db: Session = Depends(get_db)) -> MatchRepositoryPort:
+    return SQLAlchemyMatchRepository(db)
 
 
 def get_team_use_case(
