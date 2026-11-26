@@ -3,7 +3,9 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.use_cases.player_use_case import PlayerUseCase
+from app.core.auth import require_roles
 from app.core.dependencies import get_player_use_case
+from app.domain.entities.user import User, UserRole
 from app.presentation.api.schemas import (
     ErrorResponseSchema,
     PlayerCreateSchema,
@@ -21,7 +23,8 @@ router = APIRouter(prefix="/players", tags=["O'yinchilar"])
     description=(
         "Tanlangan jamoaga yangi futbolchini biriktiradi. "
         "Bitta jamoada bir xil futbolka raqami takrorlanmasligi tekshiriladi."
-    ),    responses={
+    ),
+    responses={
         400: {"model": ErrorResponseSchema, "description": "Futbolka raqami band yoki noto'g'ri"},
         404: {"model": ErrorResponseSchema, "description": "Ko'rsatilgan jamoa topilmadi"},
     },
@@ -29,6 +32,7 @@ router = APIRouter(prefix="/players", tags=["O'yinchilar"])
 def create_player(
     payload: PlayerCreateSchema,
     use_case: PlayerUseCase = Depends(get_player_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN, UserRole.ORGANIZER)),
 ):
     try:
         player = use_case.register_player(

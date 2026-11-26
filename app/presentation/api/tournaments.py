@@ -3,7 +3,9 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.application.use_cases.tournament_use_case import TournamentUseCase
+from app.core.auth import require_roles
 from app.core.dependencies import get_tournament_use_case
+from app.domain.entities.user import User, UserRole
 from app.presentation.api.schemas import (
     ErrorResponseSchema,
     MatchResponseSchema,
@@ -25,6 +27,7 @@ router = APIRouter(prefix="/tournaments", tags=["Turnirlar"])
 def create_tournament(
     payload: TournamentCreateSchema,
     use_case: TournamentUseCase = Depends(get_tournament_use_case),
+    _: User = Depends(require_roles(UserRole.ADMIN, UserRole.ORGANIZER)),
 ):
     return asdict(use_case.create_tournament(name=payload.name, season=payload.season))
 
@@ -61,7 +64,8 @@ def get_tournament_matches(
     description=(
         "Tugagan uchrashuvlar asosida tanlangan strategiya (`standard` yoki `bonus`) "
         "bo'yicha turnir jadvalini saralab qaytaradi."
-    ),    responses={
+    ),
+    responses={
         400: {"model": ErrorResponseSchema, "description": "Noma'lum scoring qoidasi"},
         404: {"model": ErrorResponseSchema, "description": "Turnir topilmadi"},
     },
@@ -71,7 +75,8 @@ def get_tournament_standings(
     scoring: str = Query(
         "standard",
         description="Hisoblash qoidasi: `standard` (3-1-0) yoki `bonus` (3+ golga +1 ochko)",
-    ),    use_case: TournamentUseCase = Depends(get_tournament_use_case),
+    ),
+    use_case: TournamentUseCase = Depends(get_tournament_use_case),
 ):
     try:
         standings = use_case.get_standings(tournament_id=tournament_id, scoring_rule=scoring)
