@@ -6,10 +6,44 @@ from app.presentation.api.players import router as players_router
 from app.presentation.api.teams import router as teams_router
 from app.presentation.api.tournaments import router as tournaments_router
 
+tags_metadata = [
+    {
+        "name": "Tizim holati",
+        "description": "Server ishlayotganini va joriy versiyani tekshirish uchun texnik nuqta.",
+    },
+    {
+        "name": "Jamoalar",
+        "description": "Havaskor futbol jamoalarini ro'yxatdan o'tkazish, ko'rish va o'chirish amallari.",
+    },
+    {
+        "name": "O'yinchilar",
+        "description": "Jamoalarga futbolchilarni biriktirish va ularning tarkibini boshqarish.",
+    },
+    {
+        "name": "Turnirlar",
+        "description": "Musobaqalar yaratish, o'yinlar ro'yxati va turnir jadvalini olish.",
+    },
+    {
+        "name": "Uchrashuvlar",
+        "description": "O'yinlarni rejalashtirish va yakuniy hisoblarni kiritish.",
+    },
+]
+
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     debug=settings.DEBUG,
+    description=(
+        "Havaskor futbol turnirlarini tashkil etish, jamoalar va o'yinchilarni ro'yxatdan o'tkazish, "
+        "uchrashuv natijalarini kiritish hamda turnir jadvalini avtomatik hisoblash uchun REST API."
+    ),
+    openapi_tags=tags_metadata,
+    contact={
+        "name": "Toirov Azizjon",
+        "url": "https://github.com/azizjontoirov/football-system",
+    },
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
@@ -19,9 +53,10 @@ app.include_router(tournaments_router, prefix=settings.API_V1_PREFIX)
 app.include_router(matches_router, prefix=settings.API_V1_PREFIX)
 
 
-@app.get("/")
+@app.get("/", tags=["Tizim holati"], summary="Asosiy kirish nuqtasi")
 def root():
     return {
         "message": f"{settings.APP_NAME} API ishlamoqda",
         "docs_url": "/docs",
+        "redoc_url": "/redoc",
     }

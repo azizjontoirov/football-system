@@ -4,12 +4,24 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from app.application.use_cases.player_use_case import PlayerUseCase
 from app.application.use_cases.team_use_case import TeamUseCase
 from app.core.dependencies import get_player_use_case, get_team_use_case
-from app.presentation.api.schemas import TeamCreateSchema
+from app.presentation.api.schemas import (
+    ErrorResponseSchema,
+    PlayerResponseSchema,
+    TeamCreateSchema,
+    TeamResponseSchema,
+)
 
 router = APIRouter(prefix="/teams", tags=["Jamoalar"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=TeamResponseSchema,
+    summary="Yangi jamoani ro'yxatdan o'tkazish",
+    description="Tizimga yangi havaskor futbol jamoasini qo'shadi. Bir xil nomdagi jamoani qayta qo'shish taqiqlanadi.",
+    responses={400: {"model": ErrorResponseSchema, "description": "Jamoa nomi band yoki noto'g'ri"}},
+)
 def create_team(
     payload: TeamCreateSchema,
     use_case: TeamUseCase = Depends(get_team_use_case),
@@ -20,12 +32,22 @@ def create_team(
         raise HTTPException(status_code=400, detail=str(err))
 
 
-@router.get("/")
+@router.get(
+    "/",
+    response_model=list[TeamResponseSchema],
+    summary="Barcha jamoalar ro'yxatini olish",
+    description="Tizimda ro'yxatdan o'tgan barcha futbol jamoalarini qaytaradi.",
+)
 def get_teams(use_case: TeamUseCase = Depends(get_team_use_case)):
     return [asdict(team) for team in use_case.list_teams()]
 
 
-@router.get("/{team_id}")
+@router.get(
+    "/{team_id}",
+    response_model=TeamResponseSchema,
+    summary="Jamoani ID bo'yicha olish",
+    responses={404: {"model": ErrorResponseSchema, "description": "Jamoa topilmadi"}},
+)
 def get_team_by_id(team_id: int, use_case: TeamUseCase = Depends(get_team_use_case)):
     try:
         return asdict(use_case.get_team(team_id))
@@ -33,7 +55,12 @@ def get_team_by_id(team_id: int, use_case: TeamUseCase = Depends(get_team_use_ca
         raise HTTPException(status_code=404, detail=str(err))
 
 
-@router.delete("/{team_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{team_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Jamoani o'chirish",
+    responses={404: {"model": ErrorResponseSchema, "description": "Jamoa topilmadi"}},
+)
 def delete_team(team_id: int, use_case: TeamUseCase = Depends(get_team_use_case)):
     try:
         use_case.delete_team(team_id)
@@ -42,7 +69,12 @@ def delete_team(team_id: int, use_case: TeamUseCase = Depends(get_team_use_case)
         raise HTTPException(status_code=404, detail=str(err))
 
 
-@router.get("/{team_id}/players")
+@router.get(
+    "/{team_id}/players",
+    response_model=list[PlayerResponseSchema],
+    summary="Jamoa o'yinchilari ro'yxatini olish",
+    responses={404: {"model": ErrorResponseSchema, "description": "Jamoa topilmadi"}},
+)
 def get_team_players(
     team_id: int,
     use_case: PlayerUseCase = Depends(get_player_use_case),
