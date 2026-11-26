@@ -2,31 +2,18 @@ from fastapi import FastAPI
 from app.core.config import settings
 from app.presentation.api.health import router as health_router
 from app.presentation.api.matches import router as matches_router
+from app.presentation.api.notifications import router as notifications_router
 from app.presentation.api.players import router as players_router
 from app.presentation.api.teams import router as teams_router
 from app.presentation.api.tournaments import router as tournaments_router
 
 tags_metadata = [
-    {
-        "name": "Tizim holati",
-        "description": "Server ishlayotganini va joriy versiyani tekshirish uchun texnik nuqta.",
-    },
-    {
-        "name": "Jamoalar",
-        "description": "Havaskor futbol jamoalarini ro'yxatdan o'tkazish, ko'rish va o'chirish amallari.",
-    },
-    {
-        "name": "O'yinchilar",
-        "description": "Jamoalarga futbolchilarni biriktirish va ularning tarkibini boshqarish.",
-    },
-    {
-        "name": "Turnirlar",
-        "description": "Musobaqalar yaratish, o'yinlar ro'yxati va turnir jadvalini olish.",
-    },
-    {
-        "name": "Uchrashuvlar",
-        "description": "O'yinlarni rejalashtirish va yakuniy hisoblarni kiritish.",
-    },
+    {"name": "Tizim holati", "description": "Server ishlayotganini va joriy versiyani tekshirish."},
+    {"name": "Jamoalar", "description": "Havaskor futbol jamoalarini boshqarish."},
+    {"name": "O'yinchilar", "description": "Jamoalarga futbolchilarni biriktirish."},
+    {"name": "Turnirlar", "description": "Musobaqalar va turnir jadvalini olish."},
+    {"name": "Uchrashuvlar", "description": "O'yinlarni rejalashtirish va hisob kiritish."},
+    {"name": "Hodisalar va bildirishnomalar", "description": "EventBus orqali hosil bo'lgan jonli bildirishnomalar."},
 ]
 
 app = FastAPI(
@@ -51,6 +38,7 @@ app.include_router(teams_router, prefix=settings.API_V1_PREFIX)
 app.include_router(players_router, prefix=settings.API_V1_PREFIX)
 app.include_router(tournaments_router, prefix=settings.API_V1_PREFIX)
 app.include_router(matches_router, prefix=settings.API_V1_PREFIX)
+app.include_router(notifications_router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/", tags=["Tizim holati"], summary="Asosiy kirish nuqtasi")

@@ -1,5 +1,7 @@
 from app.domain.entities.match import Match
 from app.domain.entities.tournament import Tournament
+from app.domain.events.football_events import MatchFinishedEvent
+from app.domain.ports.event_bus import EventBusPort
 from app.domain.ports.match_repository import MatchRepositoryPort
 from app.domain.ports.team_repository import TeamRepositoryPort
 from app.domain.ports.tournament_repository import TournamentRepositoryPort
@@ -13,10 +15,12 @@ class TournamentUseCase:
         tournament_repo: TournamentRepositoryPort,
         match_repo: MatchRepositoryPort,
         team_repo: TeamRepositoryPort,
+        event_bus: EventBusPort | None = None,
     ):
         self.tournament_repo = tournament_repo
         self.match_repo = match_repo
         self.team_repo = team_repo
+        self.event_bus = event_bus
 
     def create_tournament(self, name: str, season: str) -> Tournament:
         return self.tournament_repo.save(name=name, season=season)
@@ -48,7 +52,20 @@ class TournamentUseCase:
         if not match:
             raise LookupError(f"ID={match_id} bo'lgan uchrashuv topilmadi")
         match.record_result(home_score=home_score, away_score=away_score)
-        return self.match_repo.update(match)
+        updated = self.match_repo.update(match)
+
+        if self.event_bus:
+            self.event_bus.publish(
+                MatchFinishedEvent(
+                    tournament_id=updated.tournament_id,
+                    match_id=updated.id,
+                    home_team_id=updated.home_team_id,
+                    away_team_id=updated.away_team_id,
+                    home_score=updated.home_score,
+                    away_score=updated.away_score,
+                )
+            )
+        return updated
 
     def get_standings(self, tournament_id: int, scoring_rule: str = "standard") -> list[TeamStanding]:
         if not self.tournament_repo.get_by_id(tournament_id):
