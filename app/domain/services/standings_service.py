@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from app.domain.entities.match import Match, MatchStatus
 from app.domain.entities.team import Team
+from app.domain.strategies.scoring_strategy import ScoringStrategy, StandardScoringStrategy
 
 
 @dataclass
@@ -21,7 +22,10 @@ class TeamStanding:
 
 
 class StandingsService:
-    """Turnir jadvalini hisoblash bo'yicha predmet sohasi xizmati."""
+    """Turnir jadvalini tanlangan strategiya asosida hisoblovchi xizmat."""
+
+    def __init__(self, scoring_strategy: ScoringStrategy | None = None):
+        self.scoring_strategy = scoring_strategy or StandardScoringStrategy()
 
     def calculate(self, teams: list[Team], matches: list[Match]) -> list[TeamStanding]:
         table: dict[int, TeamStanding] = {
@@ -47,17 +51,17 @@ class StandingsService:
 
             if match.home_score > match.away_score:
                 home.won += 1
-                home.points += 3
                 away.lost += 1
             elif match.home_score < match.away_score:
                 away.won += 1
-                away.points += 3
                 home.lost += 1
             else:
                 home.drawn += 1
                 away.drawn += 1
-                home.points += 1
-                away.points += 1
+
+            # Ochkolar tanlangan Strategy orqali hisoblanadi
+            home.points += self.scoring_strategy.calculate_points(match.home_score, match.away_score)
+            away.points += self.scoring_strategy.calculate_points(match.away_score, match.home_score)
 
         return sorted(
             table.values(),
