@@ -3,8 +3,6 @@ from app.domain.ports.team_repository import TeamRepositoryPort
 
 
 class InMemoryTeamRepository(TeamRepositoryPort):
-    """Ma'lumotlarni vaqtinchalik xotirada saqlovchi adapter."""
-
     def __init__(self):
         self._teams: list[Team] = []
         self._next_id: int = 1
@@ -23,3 +21,10 @@ class InMemoryTeamRepository(TeamRepositoryPort):
 
     def get_all(self) -> list[Team]:
         return list(self._teams)
+
+    def delete(self, team_id: int) -> bool:
+        for idx, team in enumerate(self._teams):
+            if team.id == team_id:
+                self._teams.pop(idx)
+                return True
+        return False
