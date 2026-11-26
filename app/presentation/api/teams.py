@@ -1,15 +1,11 @@
 from dataclasses import asdict
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.application.use_cases.team_use_case import TeamUseCase
-from app.infrastructure.persistence.in_memory_team_repo import InMemoryTeamRepository
+from app.core.dependencies import get_team_use_case
 
 router = APIRouter(prefix="/teams", tags=["Jamoalar"])
-
-# Adapter va Use Case ni bog'lash (5-laboratoriyada DI container orqali boshqariladi)
-_repo = InMemoryTeamRepository()
-_use_case = TeamUseCase(team_repo=_repo)
 
 
 class TeamCreateSchema(BaseModel):
@@ -18,15 +14,18 @@ class TeamCreateSchema(BaseModel):
 
 
 @router.post("/", status_code=201)
-def create_team(payload: TeamCreateSchema):
+def create_team(
+    payload: TeamCreateSchema,
+    use_case: TeamUseCase = Depends(get_team_use_case),
+):
     try:
-        team = _use_case.register_team(name=payload.name, city=payload.city)
+        team = use_case.register_team(name=payload.name, city=payload.city)
         return asdict(team)
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err))
 
 
 @router.get("/")
-def get_teams():
-    teams = _use_case.list_teams()
+def get_teams(use_case: TeamUseCase = Depends(get_team_use_case)):
+    teams = use_case.list_teams()
     return [asdict(team) for team in teams]
