@@ -14,3 +14,7 @@ class TeamRepositoryPort(ABC):
     @abstractmethod
     def get_all(self) -> list[Team]:
         pass
+
+    @abstractmethod
+    def delete(self, team_id: int) -> bool:
+        pass
