@@ -1,4 +1,5 @@
 from dataclasses import asdict
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.application.use_cases.tournament_use_case import TournamentUseCase

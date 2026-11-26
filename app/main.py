@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from app.core.config import settings
 from app.presentation.api.health import router as health_router
 from app.presentation.api.matches import router as matches_router

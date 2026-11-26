@@ -1,4 +1,5 @@
 from dataclasses import asdict
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.application.use_cases.tournament_use_case import TournamentUseCase
@@ -57,16 +58,20 @@ def get_tournament_matches(
     "/{tournament_id}/standings",
     response_model=list[StandingResponseSchema],
     summary="Turnir jadvalini hisoblash va olish",
-    description="Tugagan uchrashuvlar asosida tanlangan strategiya (`standard` yoki `bonus`) bo'yicha turnir jadvalini saralab qaytaradi.",
-    responses={
+    description=(
+        "Tugagan uchrashuvlar asosida tanlangan strategiya (`standard` yoki `bonus`) "
+        "bo'yicha turnir jadvalini saralab qaytaradi."
+    ),    responses={
         400: {"model": ErrorResponseSchema, "description": "Noma'lum scoring qoidasi"},
         404: {"model": ErrorResponseSchema, "description": "Turnir topilmadi"},
     },
 )
 def get_tournament_standings(
     tournament_id: int,
-    scoring: str = Query("standard", description="Hisoblash qoidasi: `standard` (3-1-0) yoki `bonus` (3+ golga +1 ochko)"),
-    use_case: TournamentUseCase = Depends(get_tournament_use_case),
+    scoring: str = Query(
+        "standard",
+        description="Hisoblash qoidasi: `standard` (3-1-0) yoki `bonus` (3+ golga +1 ochko)",
+    ),    use_case: TournamentUseCase = Depends(get_tournament_use_case),
 ):
     try:
         standings = use_case.get_standings(tournament_id=tournament_id, scoring_rule=scoring)
