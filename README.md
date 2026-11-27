@@ -1,0 +1,1 @@
+![CI/CD Pipeline](https://github.com/azizjontoirov/football-system/actions/workflows/ci.yml/badge.svg?branch=develop)

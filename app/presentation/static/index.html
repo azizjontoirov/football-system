@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Havaskor futbol musobaqalari tizimi</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="logo">⚽</span>
+        <div>
+          <h1>Havaskor Futbol Tizimi</h1>
+          <p class="subtitle">Clean Architecture • FastAPI • JWT &amp; RBAC • Monitoring</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <span id="healthBadge" class="badge badge-neutral">Tekshirilmoqda...</span>
+        <span id="userBadge" class="badge badge-role">Mehmon (viewer)</span>
+        <button id="authToggleBtn" class="btn btn-primary">Kirish / Ro‘yxatdan o‘tish</button>
+        <button id="logoutBtn" class="btn btn-outline hidden">Chiqish</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Autentifikatsiya paneli -->
+    <section id="authCard" class="card hidden">
+      <div class="card-header">
+        <h2>Tizimga kirish va ro‘yxatdan o‘tish (JWT)</h2>
+        <button id="closeAuthBtn" class="btn btn-sm btn-outline">Yopish</button>
+      </div>
+      <div class="grid-2">
+        <form id="loginForm" class="form-box">
+          <h3>Kirish (Login)</h3>
+          <input type="text" id="loginUsername" placeholder="Username" required />
+          <input type="password" id="loginPassword" placeholder="Parol" required />
+          <button type="submit" class="btn btn-primary">Kirish</button>
+        </form>
+        <form id="registerForm" class="form-box">
+          <h3>Ro‘yxatdan o‘tish</h3>
+          <input type="text" id="regUsername" placeholder="Username (min 3 belgi)" required />
+          <input type="email" id="regEmail" placeholder="Email" required />
+          <input type="password" id="regPassword" placeholder="Parol (min 6 belgi)" required />
+          <select id="regRole">
+            <option value="admin">Admin (to‘liq huquq)</option>
+            <option value="organizer">Organizer (tashkilotchi)</option>
+            <option value="viewer">Viewer (muxlis)</option>
+          </select>
+          <button type="submit" class="btn btn-success">Ro‘yxatdan o‘tish</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Monitoring ko'rsatkichlari -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Jamoalar</span>
+        <strong id="statTeams">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Turnirlar</span>
+        <strong id="statTournaments">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Jami API so‘rovlar</span>
+        <strong id="statRequests">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Ma’lumotlar bazasi</span>
+        <strong id="statDb">—</strong>
+      </div>
+    </section>
+
+    <!-- Asosiy bo'limlar -->
+    <div class="grid-main">
+      <!-- Turnir jadvali -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🏆 Turnir jadvali</h2>
+          <div class="inline-controls">
+            <select id="tournamentSelect"></select>
+            <select id="scoringSelect">
+              <option value="standard">Standart (3-1-0)</option>
+              <option value="bonus">Bonus (3+ gol = +1)</option>
+            </select>
+            <button id="refreshStandingsBtn" class="btn btn-sm btn-outline">Yangilash</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Jamoa</th>
+                <th>O‘</th>
+                <th>G‘</th>
+                <th>D</th>
+                <th>M</th>
+                <th>T/N</th>
+                <th>Ochko</th>
+              </tr>
+            </thead>
+            <tbody id="standingsBody">
+              <tr><td colspan="8" class="empty">Turnir tanlang yoki yarating</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Bildirishnomalar lentasi (EventBus) -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🔔 Jonli hodisalar (EventBus)</h2>
+          <button id="refreshNotifBtn" class="btn btn-sm btn-outline">Yangilash</button>
+        </div>
+        <ul id="notificationsList" class="feed-list">
+          <li class="empty">Hozircha hodisalar yo‘q</li>
+        </ul>
+      </section>
+    </div>
+
+    <!-- Jamoalar, turnirlar va uchrashuvlarni boshqarish -->
+    <div class="grid-3">
+      <section class="card">
+        <h2>🛡️ Jamoalar</h2>
+        <form id="teamForm" class="form-box">
+          <input type="text" id="teamName" placeholder="Jamoa nomi (masalan: Registon FC)" required />
+          <input type="text" id="teamCity" placeholder="Shahar (masalan: Samarqand)" required />
+          <button type="submit" class="btn btn-primary">Jamoa qo‘shish</button>
+        </form>
+        <ul id="teamsList" class="item-list"></ul>
+      </section>
+
+      <section class="card">
+        <h2>📅 Turnir yaratish</h2>
+        <form id="tournamentForm" class="form-box">
+          <input type="text" id="tourName" placeholder="Turnir nomi" required />
+          <input type="text" id="tourSeason" placeholder="Mavsum (masalan: 2026)" required />
+          <button type="submit" class="btn btn-primary">Turnir qo‘shish</button>
+        </form>
+        <hr class="divider" />
+        <h3>🏃 O‘yinchi qo‘shish</h3>
+        <form id="playerForm" class="form-box">
+          <input type="text" id="playerName" placeholder="F.I.Sh." required />
+          <select id="playerTeamSelect" required></select>
+          <div class="grid-2">
+            <input type="number" id="playerNumber" placeholder="Raqam (1-99)" min="1" max="99" required />
+            <input type="text" id="playerPos" placeholder="Pozitsiya (Hujumchi)" required />
+          </div>
+          <button type="submit" class="btn btn-success">O‘yinchi qo‘shish</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>⚽ Uchrashuvlar</h2>
+        <form id="matchForm" class="form-box">
+          <select id="homeTeamSelect" required></select>
+          <select id="awayTeamSelect" required></select>
+          <button type="submit" class="btn btn-primary">Uchrashuv belgilash</button>
+        </form>
+        <ul id="matchesList" class="item-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      Havaskor futbol musobaqalari tizimi • v1.0.0 • <a href="/docs" target="_blank">Swagger API Docs</a> •
+      <a href="/api/v1/monitoring/metrics/prometheus" target="_blank">Prometheus Metrics</a>
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

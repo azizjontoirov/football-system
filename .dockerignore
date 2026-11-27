@@ -1,0 +1,11 @@
+.venv
+__pycache__
+*.pyc
+.git
+.gitignore
+.env
+*.db
+alembic/__pycache__
+docs
+scripts
+logs/

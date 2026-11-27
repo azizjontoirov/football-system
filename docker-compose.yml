@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: football_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: football_user
+      POSTGRES_PASSWORD: football_password
+      POSTGRES_DB: football_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U football_user -d football_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: football_api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_NAME: "Havaskor futbol musobaqalari tizimi"
+      APP_VERSION: "0.1.0"
+      DEBUG: "false"
+      API_V1_PREFIX: "/api/v1"
+      DATABASE_URL: "postgresql+psycopg2://football_user:football_password@db:5432/football_db"
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
