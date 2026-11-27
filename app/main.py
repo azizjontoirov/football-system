@@ -1,4 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.logging_config import setup_logging
@@ -14,6 +19,8 @@ from app.presentation.api.tournaments import router as tournaments_router
 
 setup_logging()
 
+STATIC_DIR = Path(__file__).resolve().parent / "presentation" / "static"
+
 tags_metadata = [
     {"name": "Tizim holati", "description": "Server ishlayotganini va joriy versiyani tekshirish."},
     {"name": "Autentifikatsiya", "description": "Ro'yxatdan o'tish, JWT token olish va profilni tekshirish."},
@@ -27,7 +34,7 @@ tags_metadata = [
 
 app = FastAPI(
     title=settings.APP_NAME,
-    version=settings.APP_VERSION,
+    version="1.0.0",
     debug=settings.DEBUG,
     description=(
         "Havaskor futbol turnirlarini tashkil etish, jamoalar va o'yinchilarni ro'yxatdan o'tkazish, "
@@ -42,7 +49,16 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(ObservabilityMiddleware)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 app.include_router(health_router, prefix=settings.API_V1_PREFIX)
 app.include_router(auth_router, prefix=settings.API_V1_PREFIX)
@@ -58,6 +74,12 @@ app.include_router(monitoring_router, prefix=settings.API_V1_PREFIX)
 def root():
     return {
         "message": f"{settings.APP_NAME} API ishlamoqda",
+        "ui_url": "/ui",
         "docs_url": "/docs",
         "redoc_url": "/redoc",
     }
+
+
+@app.get("/ui", include_in_schema=False)
+def web_dashboard():
+    return FileResponse(STATIC_DIR / "index.html")
